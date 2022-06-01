@@ -54,7 +54,7 @@ contract FlowInsightMarketplace is ContractGuard {
     function makeOfferWithToken(uint256 _nftId, uint256 _tokenAmount) external onlyOneBlock {
         // TODO
     }
-
+    
     function confirmTrade(uint256 _nftId, uint256 _paymentId) external onlyNFTOwner(_nftId) onlyOneBlock {
         // do NFT transfer
         FlowInsightVault(vault).transferNFT(_nftId, _paymentId, flowInsightNFT);

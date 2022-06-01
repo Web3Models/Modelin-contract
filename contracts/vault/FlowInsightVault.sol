@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
+import { ContractGuard } from "../lib/ContractGuard.sol";
 import { FlowInsightERC721NFT } from "../nft/FlowInsightERC721NFT.sol";
 
 /*
@@ -103,7 +104,7 @@ contract Escapable is Owned {
 
 /// @dev `Vault` is a higher level contract built off of the `Escapable`
 ///  contract that holds funds for Campaigns and automates payments.
-contract FlowInsightVault is Escapable {
+contract FlowInsightVault is Escapable, ContractGuard {
 
     /// @dev `Payment` is a public structure that describes the details of
     ///  each payment making it easy to track the movement of funds
@@ -284,18 +285,21 @@ contract FlowInsightVault is Escapable {
         FlowInsightERC721NFT(_flowInsightNFT).safeTransferFrom(p.recipient, p.buyer, _nftId);
     }
     
-    /// @notice only `allowedMarketplace[]` Cancel a payment all together
+    /// @notice only `buyer` or `allowedMarketplace[]` or `securityGuard` Cancel and return a payment
     /// @param _idPayment ID of the payment to be canceled.
-    function cancelPayment(uint _idPayment) public onlyAllowedMarketplace {
+    function cancelPayment(uint _idPayment) public onlyOneBlock {
         require (_idPayment < authorizedPayments.length);
 
         Payment storage p = authorizedPayments[_idPayment];
 
+        // Checking msg sender 
+        require (msg.sender == p.buyer || allowedMarketplace[msg.sender] || msg.sender == securityGuard, 
+                    "not buyer or allowed marketplace or security guard"); 
+        require (!p.canceled, "payment is canceled");
+        require (!p.paid, "payment is paid");
 
-        require (!p.canceled);
-        require (!p.paid);
-
-        p.canceled = true;
+        p.canceled = true; // Set the payment to being canceled
+        require (p.buyer.send(p.amount)); // Return the payment
         emit PaymentCanceled(_idPayment);
     }
 

@@ -49,7 +49,7 @@ describe('Marketplace Contract', () => {
     await flowInsightERC721NFT.setMarketplace(flowInsightMarketplace.address, true);
     await flowInsightVault.authorizeMarketplace(flowInsightMarketplace.address, true);
     // create test NFT
-    await flowInsightERC721NFT.createNFT(owner.address, 'testNFT', 'testNFT', '', '');
+    await flowInsightERC721NFT.createNFT(owner.address, 'testNFT', 'testNFT', '', [], '', '');
     nftId = (await flowInsightERC721NFT.getTotalSupply()).sub(1);
   });
 
